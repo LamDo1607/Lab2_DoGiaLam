@@ -17,18 +17,34 @@ namespace Lab2_DoGiaLam.Controllers
         {
             _dbContext = new ApplicationDbContext();
         }
-        public ActionResult Create(CourseViewModels viewModel)
+        [Authorize]
+        public ActionResult Create()
         {
+            var viewModel = new CourseViewModels
+            {
+                Categories = _dbContext.Categories.ToList()
+            };
+            return View(viewModel);
+        }
+        [Authorize]
+        [HttpPost]
+        public ActionResult Create(CourseViewModels viewModels) 
+        {
+            if(!ModelState.IsValid)
+            {
+                viewModels.Categories = _dbContext.Categories.ToList();
+                return View("Create", viewModels);
+            }
             var course = new Course
             {
                 LecturerId = User.Identity.GetUserId(),
-                DateTime = viewModel.GetDateTime(),
-                CategoryId = viewModel.Category,
-                Place = viewModel.Place,
+                DateTime = viewModels.GetDateTime(),
+                CategoryId = viewModels.Category,
+                Place = viewModels.Place,
             };
             _dbContext.Course.Add(course);
             _dbContext.SaveChanges();
-            return View(viewModel);
+            return RedirectToAction("Index", "Home");
         }
     }
 }
